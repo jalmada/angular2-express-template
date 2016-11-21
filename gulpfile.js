@@ -7,6 +7,7 @@ var gulp = require('gulp'),
     plugins = require('gulp-load-plugins')({
         lazy: true
     });
+    var    exec = require('child_process').exec;
 
 var tsProject = plugins.typescript.createProject('tsconfig.json');
 
@@ -184,7 +185,7 @@ gulp.task('serve:prod', function(done) {
 });
 
 gulp.task('serve:express', function(done) {
-    runSequence('build:express', ['connect:express', 'watch'], done);
+    runSequence('build:express', ['connect:express', 'watch:express'], done);
 });
 
 gulp.task('build:dev', function(done) {
@@ -213,17 +214,20 @@ gulp.task('connect:dev', function() {
     });
 });
 
-gulp.task('connect:express', function() {
-    plugins.connect.server({
-        root: paths.express,
-        port: 3000,
-        livereload: true,
-        fallback: paths.express + '/index.html'
-    });
-});
 
+gulp.task('connect:express', function (cb) {
+  exec('node dist/express/bin/www', function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+})
 
 gulp.task("watch", function () {
     gulp.watch(['src/**/*.ts'], ['tsc']);
     gulp.watch(['src/**/*.html', 'src/**/*.css',  'src/**/*.js'], ['copy:assets']);
+});
+
+gulp.task("watch:express", function () {
+    gulp.watch(['src/**/*.ts', 'src/**/*.html', 'src/**/*.css',  'src/**/*.js'], ['tsc','copy:assets']);
 });
